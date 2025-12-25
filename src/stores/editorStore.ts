@@ -1,6 +1,9 @@
 import { create } from 'zustand'
 import type { Project, EngineType } from '@/types'
 
+// 缩略图获取器类型
+type ThumbnailGetter = () => Promise<string>
+
 interface EditorState {
   // Current project
   currentProject: Project | null
@@ -16,6 +19,8 @@ interface EditorState {
   lastSavedContent: string
   // Counter to trigger version list refresh
   versionSaveCount: number
+  // Thumbnail getter (registered by CanvasArea)
+  thumbnailGetter: ThumbnailGetter | null
 
   // Actions
   setProject: (project: Project | null) => void
@@ -26,6 +31,8 @@ interface EditorState {
   markAsSaved: () => void
   // Set content from loaded version (no unsaved flag)
   setContentFromVersion: (content: string) => void
+  // Register thumbnail getter
+  setThumbnailGetter: (getter: ThumbnailGetter | null) => void
   reset: () => void
 }
 
@@ -37,6 +44,7 @@ const initialState = {
   hasUnsavedChanges: false,
   lastSavedContent: '',
   versionSaveCount: 0,
+  thumbnailGetter: null,
 }
 
 export const useEditorStore = create<EditorState>((set, _get) => ({
@@ -64,6 +72,8 @@ export const useEditorStore = create<EditorState>((set, _get) => ({
     lastSavedContent: content,
     hasUnsavedChanges: false,
   }),
+
+  setThumbnailGetter: (getter) => set({ thumbnailGetter: getter }),
 
   reset: () => set(initialState),
 }))

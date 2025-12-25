@@ -1,13 +1,16 @@
 {
-  "name": "smart-ai-draw",
+  "name": "ai-draw-nexus",
   "private": true,
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "vite",
+    "dev": "concurrently \"pnpm run dev:frontend\" \"pnpm run dev:backend\"",
+    "dev:frontend": "vite",
+    "dev:backend": "wrangler pages dev --compatibility-date=2024-01-01 --proxy=5173",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "pages:deploy": "pnpm run build && wrangler pages deploy dist"
   },
   "dependencies": {
     "@excalidraw/excalidraw": "^0.18.0",
@@ -32,14 +35,19 @@
     "react-router-dom": "^7.11.0",
     "tailwind-merge": "^3.4.0",
     "uuid": "^13.0.0",
-    "zustand": "^5.0.9"
+    "zustand": "^5.0.9",
+    "@mozilla/readability": "^0.6.0",
+    "linkedom": "^0.18.12",
+    "turndown": "^7.2.2"
   },
   "devDependencies": {
+    "@cloudflare/workers-types": "^4.20240925.0",
     "@eslint/js": "^9.39.1",
     "@tailwindcss/vite": "^4.1.18",
     "@types/node": "^24.10.1",
     "@types/react": "^19.2.5",
     "@types/react-dom": "^19.2.3",
+    "@types/turndown": "^5.0.6",
     "@types/uuid": "^11.0.0",
     "@vitejs/plugin-react": "^5.1.1",
     "eslint": "^9.39.1",
@@ -49,6 +57,8 @@
     "tailwindcss": "^4.1.18",
     "typescript": "~5.9.3",
     "typescript-eslint": "^8.46.4",
-    "vite": "^7.2.4"
+    "vite": "^7.2.4",
+    "wrangler": "^3.75.0",
+    "concurrently": "^9.1.0"
   }
 }

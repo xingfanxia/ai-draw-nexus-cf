@@ -1,4 +1,4 @@
-import { useCallback, useRef, useImperativeHandle, forwardRef } from 'react'
+import { useCallback, useRef, useImperativeHandle, forwardRef, useEffect } from 'react'
 import { useEditorStore, selectEngineType } from '@/stores/editorStore'
 import { MermaidRenderer, type MermaidRendererRef } from '@/features/engines/mermaid/MermaidRenderer'
 import { ExcalidrawEditor, type ExcalidrawEditorRef } from '@/features/engines/excalidraw/ExcalidrawEditor'
@@ -11,6 +11,7 @@ export interface CanvasAreaRef {
   showSourceCode: () => void
   hideSourceCode: () => void
   toggleSourceCode: () => void
+  getThumbnail: () => Promise<string>
 }
 
 export const CanvasArea = forwardRef<CanvasAreaRef>(function CanvasArea(_, ref) {
@@ -19,6 +20,7 @@ export const CanvasArea = forwardRef<CanvasAreaRef>(function CanvasArea(_, ref) 
   const engineType = useEditorStore(selectEngineType)
   const isLoading = useEditorStore((s) => s.isLoading)
   const setContent = useEditorStore((s) => s.setContent)
+  const setThumbnailGetter = useEditorStore((s) => s.setThumbnailGetter)
 
   // Use projectId as key to force remount when switching projects
   // This prevents Excalidraw from using its internal localStorage cache
@@ -109,7 +111,31 @@ export const CanvasArea = forwardRef<CanvasAreaRef>(function CanvasArea(_, ref) 
           break
       }
     },
+    getThumbnail: async () => {
+      if (engineType === 'drawio' && drawioRef.current) {
+        return drawioRef.current.getThumbnail()
+      }
+      return ''
+    },
   }), [engineType])
+
+  // Register thumbnail getter for drawio engine
+  useEffect(() => {
+    if (engineType === 'drawio') {
+      setThumbnailGetter(async () => {
+        if (drawioRef.current) {
+          return drawioRef.current.getThumbnail()
+        }
+        return ''
+      })
+    } else {
+      setThumbnailGetter(null)
+    }
+
+    return () => {
+      setThumbnailGetter(null)
+    }
+  }, [engineType, setThumbnailGetter])
 
   if (!engineType) {
     return (

@@ -163,6 +163,19 @@ export function EditorPage() {
         changeSummary: '人工调整',
       })
       markAsSaved()
+
+      // Update thumbnail for drawio using native export
+      if (currentProject.engineType === 'drawio' && canvasRef.current) {
+        try {
+          const thumbnail = await canvasRef.current.getThumbnail()
+          if (thumbnail) {
+            await ProjectRepository.update(currentProject.id, { thumbnail })
+          }
+        } catch (err) {
+          console.error('Failed to generate thumbnail:', err)
+        }
+      }
+
       success('版本已保存')
     } catch (error) {
       console.error('Failed to save version:', error)
@@ -270,7 +283,7 @@ export function EditorPage() {
             <DropdownMenuContent>
               <DropdownMenuRadioGroup>
                 <DropdownMenuRadioItem className='pl-2' value="svg" onClick={() => canvasRef.current?.exportAsSvg()}>
-                  <Download className="mr-2 h-4 w-4" />
+                  <Code className="mr-2 h-4 w-4" />
                   导出为 SVG
                 </DropdownMenuRadioItem>
                 <DropdownMenuRadioItem className='pl-2' value="png" onClick={() => canvasRef.current?.exportAsPng()}>

@@ -2,7 +2,7 @@
 
 An AI-powered diagram creation platform. Describe your diagram in natural language, and AI generates it for you.
 
-This is not just a tool, but a full-featured diagram creation platform.
+Built on Cloudflare Pages with React frontend and Pages Functions backend.
 
 ## Key Highlights
 
@@ -79,79 +79,61 @@ In the chat panel on the right side of the editor, you can:
 ### 1. Clone and Install Dependencies
 
 ```bash
-git clone https://github.com/liujuntao123/ai-draw-nexus
-cd ai-draw-nexus
-
-# Install frontend dependencies
+git clone https://github.com/liujuntao123/smart-ai-draw
+cd smart-ai-draw
 pnpm install
-
-# Install backend dependencies
-cd worker && pnpm install 
 ```
 
 ### 2. Configure Environment Variables
 
-Create a `.dev.vars` file in the `worker/` directory:
+Create a `.dev.vars` file in the root directory:
 
 ```env
 AI_API_KEY=your-api-key
 AI_BASE_URL=https://api.openai.com/v1
 AI_PROVIDER=openai
-AI_MODEL_ID=gpt-5
+AI_MODEL_ID=gpt-4o-mini
 ```
 
 > Supports OpenAI, Anthropic, and other OpenAI-compatible services
 
-### 3. Start Development Servers
-
-Run both frontend and backend simultaneously:
+### 3. Start Development Server
 
 ```bash
-# Terminal 1 - Start frontend
+# Start frontend + backend together
 pnpm run dev
-# Visit http://localhost:5173
-
-# Terminal 2 - Start backend
-cd worker && pnpm run dev
 # Visit http://localhost:8787
+
+# Or run separately:
+pnpm run dev:frontend   # Vite only (http://localhost:5173)
+pnpm run dev:backend    # Wrangler Pages only (http://localhost:8787)
 ```
 
-## Cloudflare Deployment
+**Note**: Access `http://localhost:8787` during development (wrangler proxies vite).
 
-### Frontend Deployment
+## Cloudflare Pages Deployment
 
-Build static files and deploy to any static hosting platform (Vercel, Netlify, Cloudflare Pages, etc.):
+### 1. Build
 
 ```bash
-pnpm run build
-# Output directory: dist/
+pnpm run build        # TypeScript check + Vite build
 ```
 
-### Backend Deployment (Cloudflare Workers)
-
-#### 1. Install Wrangler CLI
+### 2. Configure Production Secrets
 
 ```bash
-pnpm install -g wrangler
-wrangler login
+wrangler pages secret put AI_API_KEY
+wrangler pages secret put AI_BASE_URL
+wrangler pages secret put AI_PROVIDER
+wrangler pages secret put AI_MODEL_ID
 ```
 
-#### 2. Configure Production Secrets
+Or configure environment variables in Cloudflare Pages dashboard.
+
+### 3. Deploy
 
 ```bash
-cd worker
-
-# Set required environment variables
-wrangler secret put AI_API_KEY --env production
-wrangler secret put AI_BASE_URL --env production
-wrangler secret put AI_PROVIDER --env production
-wrangler secret put AI_MODEL_ID --env production
-```
-
-#### 3. Deploy to Production
-
-```bash
-pnpm run deploy:prod
+pnpm run pages:deploy
 ```
 
 ### Supported AI Services
@@ -167,7 +149,7 @@ pnpm run deploy:prod
 - Frontend: React 19 + Vite + TypeScript + Tailwind CSS
 - State: Zustand
 - Storage: Dexie.js (IndexedDB)
-- Backend: Cloudflare Workers
+- Backend: Cloudflare Pages Functions
 
 ## License
 

@@ -9,26 +9,32 @@ AI Diagram Hub - An AI-powered diagram creation platform supporting Mermaid, Exc
 ## Development Commands
 
 ```bash
-# Frontend (root directory)
-pnpm install          # Install dependencies
-pnpm run dev          # Start dev server (http://localhost:5173)
+# Install dependencies
+pnpm install
+
+# Start dev server (frontend + backend together, http://localhost:8787)
+pnpm run dev
+
+# Or run separately:
+pnpm run dev:frontend   # Vite only (http://localhost:5173)
+pnpm run dev:backend    # Wrangler Pages only (http://localhost:8787)
+
+# Build and deploy to Cloudflare Pages
+pnpm run pages:deploy
+
+# Other commands
 pnpm run build        # TypeScript check + Vite build
 pnpm run lint         # ESLint
-
-# Backend Worker (worker/ directory)
-cd worker
-pnpm install          # Install worker dependencies
-pnpm run dev          # Start Cloudflare Worker (http://localhost:8787)
-pnpm run deploy:prod  # Deploy to production
+pnpm run preview      # Preview production build
 ```
 
-Both frontend and worker must run simultaneously for full functionality.
+**Note**: 开发时访问 `http://localhost:8787`（wrangler 代理 vite）。
 
 ## Architecture
 
 ### Monorepo Structure
 - **Root**: React frontend (Vite + React 19 + TypeScript)
-- **worker/**: Cloudflare Workers backend (API proxy to AI providers)
+- **functions/**: Cloudflare Pages Functions (API endpoints)
 
 ### Frontend Architecture
 
@@ -53,10 +59,11 @@ Both frontend and worker must run simultaneously for full functionality.
 
 ### Backend Architecture
 
-Single Cloudflare Worker (`worker/src/index.ts`) that:
-- Proxies requests to OpenAI or Anthropic APIs
-- Handles message format conversion between providers
-- Supports both streaming (SSE) and non-streaming responses
+Cloudflare Pages Functions (`functions/api/`):
+- `chat.ts` - AI chat endpoint (OpenAI/Anthropic proxy with streaming)
+- `parse-url.ts` - URL content parsing and markdown conversion
+- `health.ts` - Health check endpoint
+- `_shared/` - Shared utilities (types, CORS, auth, AI providers)
 
 ### Key Patterns
 
@@ -68,7 +75,7 @@ Single Cloudflare Worker (`worker/src/index.ts`) that:
 
 ## Environment Setup
 
-Worker requires `.dev.vars` file in `worker/` directory:
+Create `.dev.vars` file in root directory for local development:
 ```env
 AI_API_KEY=your-api-key
 AI_BASE_URL=https://api.openai.com/v1
@@ -76,4 +83,7 @@ AI_PROVIDER=openai
 AI_MODEL_ID=gpt-4o-mini
 ```
 
-For production, use `wrangler secret put <VAR_NAME> --env production`.
+For production, configure environment variables in Cloudflare Pages dashboard or use:
+```bash
+wrangler pages secret put AI_API_KEY
+```

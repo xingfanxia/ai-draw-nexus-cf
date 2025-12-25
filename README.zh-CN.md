@@ -2,7 +2,7 @@
 
 一个 AI 驱动的图表创作平台，用自然语言描述你想要的图表，AI 帮你生成。
 
-这不仅仅是一个工具，更是一个功能完善的图表创作平台。
+基于 Cloudflare Pages 构建，前端 React + 后端 Pages Functions 一体化部署。
 
 ## 核心亮点
 
@@ -79,19 +79,14 @@
 ### 1. 克隆项目并安装依赖
 
 ```bash
-git clone https://github.com/liujuntao123/ai-draw-nexus
-cd ai-draw-nexus
-
-# 安装前端依赖
+git clone https://github.com/liujuntao123/smart-ai-draw
+cd smart-ai-draw
 pnpm install
-
-# 安装后端依赖
-cd worker && pnpm install 
 ```
 
 ### 2. 配置环境变量
 
-在 `worker/` 目录下创建 `.dev.vars` 文件：
+在根目录下创建 `.dev.vars` 文件：
 
 ```env
 AI_API_KEY=your-api-key
@@ -104,54 +99,41 @@ AI_MODEL_ID=gpt-4o-mini
 
 ### 3. 启动开发服务器
 
-需要同时运行前端和后端：
-
 ```bash
-# 终端 1 - 启动前端
+# 同时启动前端和后端
 pnpm run dev
-# 访问 http://localhost:5173
-
-# 终端 2 - 启动后端
-cd worker && pnpm run dev
 # 访问 http://localhost:8787
+
+# 或者分别启动：
+pnpm run dev:frontend   # 仅 Vite (http://localhost:5173)
+pnpm run dev:backend    # 仅 Wrangler Pages (http://localhost:8787)
 ```
 
-## Cloudflare 部署
+**注意**：开发时访问 `http://localhost:8787`（wrangler 代理 vite）。
 
-### 前端部署
+## Cloudflare Pages 部署
 
-构建静态文件后部署到任意静态托管平台（Vercel、Netlify、Cloudflare Pages 等）：
+### 1. 构建
 
 ```bash
-pnpm run build
-# 输出目录: dist/
+pnpm run build        # TypeScript 检查 + Vite 构建
 ```
 
-### 后端部署 (Cloudflare Workers)
-
-#### 1. 安装 Wrangler CLI
+### 2. 配置生产环境密钥
 
 ```bash
-pnpm install -g wrangler
-wrangler login
+wrangler pages secret put AI_API_KEY
+wrangler pages secret put AI_BASE_URL
+wrangler pages secret put AI_PROVIDER
+wrangler pages secret put AI_MODEL_ID
 ```
 
-#### 2. 配置生产环境密钥
+或在 Cloudflare Pages 控制台中配置环境变量。
+
+### 3. 部署
 
 ```bash
-cd worker
-
-# 设置必需的环境变量
-wrangler secret put AI_API_KEY --env production
-wrangler secret put AI_BASE_URL --env production
-wrangler secret put AI_PROVIDER --env production
-wrangler secret put AI_MODEL_ID --env production
-```
-
-#### 3. 部署到生产环境
-
-```bash
-pnpm run deploy:prod
+pnpm run pages:deploy
 ```
 
 ### 支持的 AI 服务
@@ -167,7 +149,7 @@ pnpm run deploy:prod
 - 前端：React 19 + Vite + TypeScript + Tailwind CSS
 - 状态管理：Zustand
 - 本地存储：Dexie.js (IndexedDB)
-- 后端：Cloudflare Workers
+- 后端：Cloudflare Pages Functions
 
 ## 开源协议
 

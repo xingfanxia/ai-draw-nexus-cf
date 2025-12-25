@@ -191,7 +191,7 @@ export function ProjectsPage() {
                         <img
                           src={project.thumbnail}
                           alt={project.title}
-                          className="h-full w-full object-cover"
+                          className="h-full w-full object-contain"
                         />
                       ) : (
                         <Sparkles className="h-8 w-8 text-muted" />

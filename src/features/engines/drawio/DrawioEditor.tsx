@@ -33,6 +33,7 @@ export interface DrawioEditorRef {
   showSourceCode: () => void
   hideSourceCode: () => void
   toggleSourceCode: () => void
+  getThumbnail: () => Promise<string>
 }
 
 const DRAWIO_BASE_URL = import.meta.env.VITE_DRAWIO_BASE_URL || 'https://embed.diagrams.net'
@@ -52,6 +53,9 @@ export const DrawioEditor = forwardRef<DrawioEditorRef, DrawioEditorProps>(
       format: ExportFormat | null
     }>({ resolver: null, format: null })
 
+    // 用于获取缩略图的 resolver
+    const thumbnailResolverRef = useRef<((data: string) => void) | null>(null)
+
     // Sync editedCode when data prop changes
     useEffect(() => {
       setEditedCode(data)
@@ -60,6 +64,13 @@ export const DrawioEditor = forwardRef<DrawioEditorRef, DrawioEditorProps>(
 
     // Handle export event - 处理导出回调
     const handleExportCallback = useCallback((exportData: EventExport) => {
+      // 如果有待处理的缩略图请求，优先处理
+      if (thumbnailResolverRef.current) {
+        thumbnailResolverRef.current(exportData.data)
+        thumbnailResolverRef.current = null
+        return
+      }
+
       // 如果有待处理的文件保存请求，优先处理
       if (saveResolverRef.current.resolver) {
         const format = saveResolverRef.current.format
@@ -157,6 +168,35 @@ export const DrawioEditor = forwardRef<DrawioEditorRef, DrawioEditorProps>(
       URL.revokeObjectURL(url)
     }, [data])
 
+    // Get thumbnail as PNG data URL
+    const getThumbnail = useCallback((): Promise<string> => {
+      return new Promise((resolve) => {
+        if (!drawioRef.current || !isReady) {
+          resolve('')
+          return
+        }
+
+        // 设置超时，防止无限等待
+        const timeout = setTimeout(() => {
+          thumbnailResolverRef.current = null
+          resolve('')
+        }, 5000)
+
+        thumbnailResolverRef.current = (exportData: string) => {
+          clearTimeout(timeout)
+          // 确保返回的是 data URL 格式
+          if (exportData.startsWith('data:')) {
+            resolve(exportData)
+          } else {
+            resolve(`data:image/png;base64,${exportData}`)
+          }
+        }
+
+        // 触发 PNG 导出
+        drawioRef.current.exportDiagram({ format: 'png' })
+      })
+    }, [isReady])
+
     // Expose methods via ref
     useImperativeHandle(ref, () => ({
       load: (xml: string) => {
@@ -175,7 +215,8 @@ export const DrawioEditor = forwardRef<DrawioEditorRef, DrawioEditorProps>(
       showSourceCode: () => setShowCodePanel(true),
       hideSourceCode: () => setShowCodePanel(false),
       toggleSourceCode: () => setShowCodePanel(prev => !prev),
-    }), [exportAsSvg, exportAsPng, exportAsSource])
+      getThumbnail,
+    }), [exportAsSvg, exportAsPng, exportAsSource, getThumbnail])
 
     // Handle drawio load event
     const handleLoad = useCallback(() => {

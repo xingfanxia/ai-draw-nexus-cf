@@ -93,6 +93,7 @@ export function useAIGenerate() {
     currentContent,
     setContentFromVersion,
     setLoading,
+    thumbnailGetter,
   } = useEditorStore()
 
   const { setMessages } = usePayloadStore()
@@ -210,8 +211,16 @@ export function useAIGenerate() {
       })
 
       // Generate and save thumbnail
+      // For drawio, use the registered thumbnailGetter from CanvasArea for accurate rendering
       try {
-        const thumbnail = await generateThumbnail(finalCode, engineType)
+        let thumbnail: string = ''
+        if (engineType === 'drawio' && thumbnailGetter) {
+          // Use Draw.io's native export for accurate thumbnail
+          thumbnail = await thumbnailGetter()
+        } else {
+          // Use fallback method for other engines
+          thumbnail = await generateThumbnail(finalCode, engineType)
+        }
         if (thumbnail) {
           await ProjectRepository.update(currentProject.id, { thumbnail })
         }
