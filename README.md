@@ -1,7 +1,7 @@
 # AI Diagram Hub
 [中文版](https://github.com/liujuntao123/ai-draw-nexus/blob/main/README.zh-CN.md)
 
-**Online**: https://ai-draw-nexus.aizhi.site
+**Online**: https://ai-draw-nexus.vercel.com
 
 [![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fjianjungki%2Fai-draw-nexus)
 [![Deploy to Cloudflare Pages](https://github.com/jianjungki/ai-draw-nexus/public/cloudfare-pages.svg)](https://dash.cloudflare.com/?to=/:account/pages/new/deploy?repo=https%3A%2F%2Fgithub.com%2Fliujuntao123%2Fai-draw-nexus)
